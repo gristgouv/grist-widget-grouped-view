@@ -518,6 +518,7 @@
     ];
   }
   const BOOL_FORMATS = makeBoolFormats();
+  const EMPTY_GROUP_KEY = Symbol("empty group key");
 
   // ── 3. État ───────────────────────────────────────────────
   let allRecords = [];
@@ -649,7 +650,7 @@
       return;
     }
     groups.forEach((group, i) => {
-      const isEmpty = group.key === '\x00__empty__';
+      const isEmpty = group.key === EMPTY_GROUP_KEY;
       const label   = isEmpty ? T.emptyGroup : String(group.label);
       const color   = colColors[group.key] || DEFAULT_PALETTE[i % DEFAULT_PALETTE.length];
 
@@ -805,7 +806,7 @@
     const map = new Map();
     allRecords.forEach(rec => {
       const raw = rec[groupBy];
-      const key = (raw == null || raw === '') ? '\x00__empty__' : String(raw);
+      const key = (raw == null || raw === '') ? EMPTY_GROUP_KEY : String(raw);
       if (!map.has(key)) map.set(key, { key, label: raw, records: [] });
       map.get(key).records.push(rec);
     });
@@ -814,8 +815,8 @@
       if (!colColors[g.key]) colColors[g.key] = DEFAULT_PALETTE[i % DEFAULT_PALETTE.length];
     });
     groups.sort((a, b) => {
-      if (a.key === '\x00__empty__') return  1;
-      if (b.key === '\x00__empty__') return -1;
+      if (a.key === EMPTY_GROUP_KEY) return  1;
+      if (b.key === EMPTY_GROUP_KEY) return -1;
       if (sortMode === 'alpha-asc')  return String(a.label).localeCompare(String(b.label), 'fr');
       if (sortMode === 'alpha-desc') return String(b.label).localeCompare(String(a.label), 'fr');
       if (sortMode === 'count-desc') return b.records.length - a.records.length;
@@ -851,7 +852,7 @@
 
     groups.forEach(group => {
       const isCollapsed = collapsed.has(group.key);
-      const isEmpty     = group.key === '\x00__empty__';
+      const isEmpty     = group.key === EMPTY_GROUP_KEY;
       const dotColor    = colColors[group.key] || '#94a3b8';
       const labelTxt    = isEmpty ? T.emptyGroup : esc(String(group.label));
       const labelCls    = isEmpty ? 'group-label is-empty' : 'group-label';
